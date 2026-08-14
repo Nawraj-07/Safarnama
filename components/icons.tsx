@@ -97,6 +97,20 @@ export function ChevronUpIcon(props: SVGProps<SVGSVGElement>) {
   );
 }
 
+export function RoadTripCarIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg {...base} viewBox="0 0 32 20" strokeWidth={1.65} {...props}>
+      <path d="M3.5 13.5v-3.1c0-.9.55-1.7 1.38-2.03l3.02-1.2 2.08-3.27c.42-.66 1.15-1.06 1.94-1.06h6.95c.91 0 1.74.5 2.16 1.3l1.55 2.94 3.87.84c1.19.26 2.05 1.31 2.05 2.53v3.05c0 .88-.72 1.6-1.6 1.6H5.1c-.88 0-1.6-.72-1.6-1.6Z" fill="currentColor" stroke="currentColor" />
+      <path d="m10.25 7.07 1.54-2.42h6.62l1.27 2.42h-9.43Z" fill="#241B14" stroke="none" opacity=".78" />
+      <circle cx="9.2" cy="14.55" r="2.15" fill="#241B14" stroke="currentColor" />
+      <circle cx="24.1" cy="14.55" r="2.15" fill="#241B14" stroke="currentColor" />
+      <circle cx="9.2" cy="14.55" r=".7" fill="currentColor" stroke="none" />
+      <circle cx="24.1" cy="14.55" r=".7" fill="currentColor" stroke="none" />
+      <path d="M4.3 10.8h2.3M25.9 10.8h1.5" stroke="#f3e4c8" strokeWidth="1.1" />
+    </svg>
+  );
+}
+
 export function InstagramIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <svg {...base} {...props}>

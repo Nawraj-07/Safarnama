@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { clamp } from "@/lib/format";
+import { RoadTripCarIcon } from "./icons";
 
 type SeekBarProps = {
   currentTime: number;
@@ -13,12 +14,26 @@ export function SeekBar({ currentTime, duration, onSeek }: SeekBarProps) {
   const trackRef = useRef<HTMLDivElement>(null);
   const [draggingTime, setDraggingTime] = useState<number | null>(null);
   const [hovering, setHovering] = useState(false);
+  const [trackWidth, setTrackWidth] = useState(0);
   const pointerIdRef = useRef<number | null>(null);
 
   const safeDuration = duration > 0 ? duration : 0;
   const displayedTime =
     draggingTime ?? clamp(currentTime, 0, safeDuration || currentTime);
   const progress = safeDuration > 0 ? displayedTime / safeDuration : 0;
+  const safeProgress = Math.min(Math.max(progress, 0), 1);
+  const carTravelDistance = Math.max(trackWidth - 28, 0);
+
+  useEffect(() => {
+    const track = trackRef.current;
+    if (!track) return;
+
+    const updateWidth = () => setTrackWidth(track.getBoundingClientRect().width);
+    updateWidth();
+    const observer = new ResizeObserver(updateWidth);
+    observer.observe(track);
+    return () => observer.disconnect();
+  }, []);
 
   const timeFromClientX = useCallback((clientX: number) => {
     const track = trackRef.current;
@@ -87,15 +102,22 @@ export function SeekBar({ currentTime, duration, onSeek }: SeekBarProps) {
       <div ref={trackRef} className="relative h-[3px] w-full rounded-full bg-white/20">
         <div
           className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-memory-amber to-memory-amber-soft"
-          style={{ width: `${Math.min(Math.max(progress * 100, 0), 100)}%` }}
+          style={{ width: `${safeProgress * 100}%` }}
         />
         <div
-          className="absolute top-1/2 h-3.5 w-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-memory-cream shadow-[0_0_18px_rgba(243,228,200,0.75)] transition-transform duration-150"
+          className={`pointer-events-none absolute left-0 top-1/2 z-10 transition-transform ${
+            draggingTime === null ? "duration-500 ease-linear" : "duration-0"
+          }`}
           style={{
-            left: `${Math.min(Math.max(progress * 100, 0), 100)}%`,
-            transform: `translate(-50%, -50%) scale(${draggingTime !== null || hovering ? 1 : 0})`,
+            transform: `translateX(${safeProgress * carTravelDistance}px)`,
           }}
-        />
+        >
+          <RoadTripCarIcon
+            className={`h-[18px] w-7 -translate-y-[58%] text-memory-amber-soft drop-shadow-[0_2px_5px_rgba(0,0,0,0.8)] transition-transform duration-200 ${
+              draggingTime !== null || hovering ? "scale-110" : "scale-100"
+            }`}
+          />
+        </div>
       </div>
     </div>
   );

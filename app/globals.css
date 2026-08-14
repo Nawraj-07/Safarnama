@@ -106,7 +106,7 @@ button {
   opacity: var(--ambient-opacity, 0);
 }
 
-main[data-time="early-morning"] {
+main[data-time="morning"] {
   --scene-brightness: 0.79;
   --scene-saturation: 0.9;
   --scene-sepia: 0.16;
@@ -116,40 +116,22 @@ main[data-time="early-morning"] {
   --ambient-opacity: 0.06;
 }
 
-main[data-time="morning"] {
-  --scene-brightness: 1;
+main[data-time="day"] {
+  --scene-brightness: 0.98;
   --scene-saturation: 0.94;
-  --scene-sepia: 0.08;
-  --environment-tint: rgba(77, 119, 151, 0.1);
-  --horizon-light: linear-gradient(180deg, rgba(132, 183, 216, 0.1), transparent 48%);
-  --mist-opacity: 0.06;
+  --scene-sepia: 0.16;
+  --environment-tint: rgba(122, 150, 149, 0.1);
+  --horizon-light: linear-gradient(180deg, rgba(132, 183, 216, 0.11), transparent 48%), radial-gradient(ellipse at 62% 42%, rgba(255, 205, 130, 0.12), transparent 52%);
+  --mist-opacity: 0.03;
 }
 
-main[data-time="afternoon"] {
-  --scene-brightness: 0.95;
-  --scene-saturation: 0.9;
-  --scene-sepia: 0.23;
-  --environment-tint: rgba(185, 126, 67, 0.16);
-  --horizon-light: radial-gradient(ellipse at 62% 42%, rgba(255, 205, 130, 0.16), transparent 52%);
-}
-
-main[data-time="sunset"] {
+main[data-time="evening"] {
   --scene-brightness: 0.77;
   --scene-saturation: 1;
   --scene-sepia: 0.3;
   --environment-tint: rgba(141, 61, 39, 0.25);
   --horizon-light: linear-gradient(180deg, rgba(81, 54, 105, 0.15), transparent 43%), radial-gradient(ellipse at 52% 76%, rgba(242, 133, 78, 0.52), transparent 51%);
   --ambient-opacity: 0.16;
-}
-
-main[data-time="dusk"] {
-  --scene-brightness: 0.54;
-  --scene-saturation: 0.76;
-  --scene-sepia: 0.18;
-  --environment-tint: rgba(28, 38, 83, 0.37);
-  --horizon-light: linear-gradient(180deg, rgba(24, 34, 90, 0.3), transparent 44%), radial-gradient(ellipse at 50% 76%, rgba(221, 111, 66, 0.36), transparent 50%);
-  --headlight-opacity: 0.26;
-  --ambient-opacity: 0.22;
 }
 
 main[data-time="night"] {

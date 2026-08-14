@@ -10,7 +10,7 @@ import { TrackList } from "@/components/TrackList";
 import { LOOP_PLAYLIST, playlists as initialPlaylists } from "@/lib/playlists";
 import { trackEvent } from "@/lib/analytics";
 import { clamp } from "@/lib/format";
-import { getTimeOfDay, type TimeOfDay } from "@/lib/timeOfDay";
+import { IstTimeProvider, useIstTime } from "@/components/IstTimeProvider";
 import type { Playlist, Track } from "@/lib/types";
 
 function mapVideoIdsToTracks(
@@ -114,7 +114,7 @@ async function fetchTrackTitles(tracks: Track[]): Promise<Track[]> {
   }));
 }
 
-export default function Page() {
+function SafarnamaExperience() {
   const [activePlaylist, setActivePlaylist] = useState<Playlist>(initialPlaylists[0]);
   const [tracks, setTracks] = useState<Track[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -124,7 +124,7 @@ export default function Page() {
   const [duration, setDuration] = useState(0);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [playerReady, setPlayerReady] = useState(false);
-  const [timeOfDay, setTimeOfDay] = useState<TimeOfDay>("night");
+  const { timeOfDay } = useIstTime();
 
   const playerRef = useRef<YouTubePlayer | null>(null);
   const activePlaylistRef = useRef(activePlaylist);
@@ -135,13 +135,6 @@ export default function Page() {
   const lastManualActionRef = useRef(0);
   const lastPlayedVideoIdRef = useRef<string | null>(null);
   const errorTimerRef = useRef<number | null>(null);
-
-  useEffect(() => {
-    const updateTimeOfDay = () => setTimeOfDay(getTimeOfDay());
-    updateTimeOfDay();
-    const timer = window.setInterval(updateTimeOfDay, 60_000);
-    return () => window.clearInterval(timer);
-  }, []);
 
   useEffect(() => {
     activePlaylistRef.current = activePlaylist;
@@ -644,5 +637,13 @@ export default function Page() {
       </div>
       <Footer />
     </main>
+  );
+}
+
+export default function Page() {
+  return (
+    <IstTimeProvider>
+      <SafarnamaExperience />
+    </IstTimeProvider>
   );
 }
