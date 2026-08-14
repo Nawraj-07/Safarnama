@@ -48,7 +48,9 @@ export function SeekBar({ currentTime, duration, onSeek }: SeekBarProps) {
 
     const handlePointerMove = (event: PointerEvent) => {
       if (event.pointerId !== pointerIdRef.current) return;
-      setDraggingTime(timeFromClientX(event.clientX));
+      const nextTime = timeFromClientX(event.clientX);
+      setDraggingTime(nextTime);
+      onSeek(nextTime);
     };
 
     const handlePointerUp = (event: PointerEvent) => {
@@ -70,14 +72,25 @@ export function SeekBar({ currentTime, duration, onSeek }: SeekBarProps) {
     };
   }, [onSeek, timeFromClientX]);
 
+  const beginSeekAtPoint = useCallback(
+    (clientX: number) => {
+      if (safeDuration <= 0) return;
+      const nextTime = timeFromClientX(clientX);
+      setDraggingTime(nextTime);
+      onSeek(nextTime);
+    },
+    [onSeek, safeDuration, timeFromClientX]
+  );
+
   return (
     <div
       className="seek-range group relative flex h-7 cursor-pointer touch-none select-none items-center py-2"
       onPointerDown={(event) => {
         if (!trackRef.current || safeDuration <= 0) return;
+        event.preventDefault();
         pointerIdRef.current = event.pointerId;
-        trackRef.current.setPointerCapture?.(event.pointerId);
-        setDraggingTime(timeFromClientX(event.clientX));
+        event.currentTarget.setPointerCapture(event.pointerId);
+        beginSeekAtPoint(event.clientX);
       }}
       onMouseEnter={() => setHovering(true)}
       onMouseLeave={() => setHovering(false)}
@@ -89,6 +102,7 @@ export function SeekBar({ currentTime, duration, onSeek }: SeekBarProps) {
       tabIndex={0}
       onKeyDown={(event) => {
         if (safeDuration <= 0) return;
+
         if (event.key === "ArrowRight") {
           event.preventDefault();
           onSeek(clamp(displayedTime + 5, 0, safeDuration));
@@ -96,6 +110,14 @@ export function SeekBar({ currentTime, duration, onSeek }: SeekBarProps) {
         if (event.key === "ArrowLeft") {
           event.preventDefault();
           onSeek(clamp(displayedTime - 5, 0, safeDuration));
+        }
+        if (event.key === "Home") {
+          event.preventDefault();
+          onSeek(0);
+        }
+        if (event.key === "End") {
+          event.preventDefault();
+          onSeek(safeDuration);
         }
       }}
     >

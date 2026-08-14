@@ -18,7 +18,7 @@ function mapVideoIdsToTracks(
   playlist: Playlist
 ): Track[] {
   return videoIds.map((videoId, index) => ({
-    id: `${playlist.id}-${videoId}`,
+    id: `${playlist.id}-${index}-${videoId}`,
     title: `Memory ${String(index + 1).padStart(2, "0")}`,
     artist: playlist.name,
     film: playlist.subtitle,
@@ -32,17 +32,25 @@ function sanitizePlaylistTracks<T>(items: T[]): T[] {
   return items.filter((_, index) => !BROKEN_TRACK_POSITIONS.has(index + 1));
 }
 
-function getJourneyVideoIds(videoIds: string[], playlist: Playlist): string[] {
-  const uniqueIds = videoIds.filter((videoId, index, list) => {
-    if (!videoId) return false;
-    return list.indexOf(videoId) === index;
+function dedupePlaylistTrackIds(videoIds: string[]): string[] {
+  const seen = new Set<string>();
+
+  return videoIds.filter((videoId) => {
+    const trimmed = videoId.trim();
+    if (!trimmed || seen.has(trimmed)) return false;
+    seen.add(trimmed);
+    return true;
   });
+}
 
-  const sanitizedIds = sanitizePlaylistTracks(uniqueIds);
+function getJourneyVideoIds(videoIds: string[], playlist: Playlist): string[] {
+  const uniqueIds = dedupePlaylistTrackIds(
+    sanitizePlaylistTracks(videoIds.filter((videoId) => Boolean(videoId)))
+  );
 
-  if (!playlist.featuredVideoId && !playlist.closingVideoId) return sanitizedIds;
+  if (!playlist.featuredVideoId && !playlist.closingVideoId) return uniqueIds;
 
-  const trackIds = [...sanitizedIds];
+  const trackIds = [...uniqueIds];
 
   if (playlist.featuredVideoId) {
     const featuredVideoId = playlist.featuredVideoId.trim();
@@ -58,7 +66,7 @@ function getJourneyVideoIds(videoIds: string[], playlist: Playlist): string[] {
     }
   }
 
-  return trackIds;
+  return dedupePlaylistTrackIds(trackIds);
 }
 
 function cleanVideoTitle(rawTitle: string): string {
@@ -71,35 +79,30 @@ function cleanVideoTitle(rawTitle: string): string {
 }
 
 async function fetchTrackTitles(tracks: Track[]): Promise<Track[]> {
-  const metadataCache = new Map<string, { title?: string }>();
-  const queue = [...tracks];
-  const result = new Map(tracks.map((track) => [track.videoId, track]));
+  const queue = tracks.map((track, index) => ({ track, index }));
+  const result = [...tracks];
 
   async function worker() {
     while (queue.length > 0) {
-      const track = queue.shift();
-      if (!track) return;
+      const item = queue.shift();
+      if (!item) return;
+
+      const { track, index } = item;
 
       try {
-        const cached = metadataCache.get(track.videoId);
-        let title = cached?.title;
+        const response = await fetch(
+          `https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${encodeURIComponent(
+            track.videoId
+          )}&format=json`,
+          { cache: "force-cache" }
+        );
+        if (!response.ok) continue;
 
-        if (!title) {
-          const response = await fetch(
-            `https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${encodeURIComponent(
-              track.videoId
-            )}&format=json`,
-            { cache: "force-cache" }
-          );
-          if (response.ok) {
-            const data = (await response.json()) as { title?: string };
-            title = data.title ? cleanVideoTitle(data.title) : undefined;
-            metadataCache.set(track.videoId, { title });
-          }
-        }
+        const data = (await response.json()) as { title?: string };
+        const title = data.title ? cleanVideoTitle(data.title) : undefined;
 
         if (title) {
-          result.set(track.videoId, { ...track, title });
+          result[index] = { ...result[index], ...track, title };
         }
       } catch {
         // Missing metadata is not fatal; player metadata can still fill it.
@@ -108,7 +111,7 @@ async function fetchTrackTitles(tracks: Track[]): Promise<Track[]> {
   }
 
   await Promise.all(Array.from({ length: 5 }, worker));
-  return tracks.map((track) => result.get(track.videoId) ?? track).map((track, index) => ({
+  return result.map((track, index) => ({
     ...track,
     film: track.film || `Track ${index + 1}`,
   }));
