@@ -4,12 +4,15 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Nostalgia — Memories, Music, Miles",
+  title: "Safarnama",
   description:
     "Some songs don't just play. They take you back. A cinematic Indian road-trip music player for KK and Atif Aslam playlists.",
   metadataBase: new URL("https://nostalgia-road.local"),
+  icons: {
+    icon: "/favicon.jpg",
+  },
   openGraph: {
-    title: "Nostalgia — Memories, Music, Miles",
+    title: "Safarnama",
     description:
       "Songs for long drives, old memories and roads we never forget.",
     type: "website",
@@ -31,6 +34,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
+        <link rel="icon" href="/favicon.jpg" type="image/jpeg" />
         <link rel="preconnect" href="https://www.youtube.com" />
         <link rel="preconnect" href="https://i.ytimg.com" />
         <link
